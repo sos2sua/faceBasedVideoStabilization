@@ -1,5 +1,6 @@
 import cv2
 
+USE_TRACKING_AFTER_INITIAL_FACE_DETECTION = True
 STABILIZED_WINDOW_HEIGHT_HALF = int(480 / 2)
 STABILIZED_WINDOW_WIDTH_HALF = int(720 / 2)
 SAVE_OUTPUT_VIDEO = True
@@ -19,9 +20,13 @@ else:
 x, y, w, h = [0,0,0,0]
 newy_max = newx_max = 0
 newy = newx = 0
-got_face = 0
+gotFace = False
 writer = 0
 roi = 0
+
+if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION:
+    tracker = cv2.TrackerKCF_create()
+
 while cv2.waitKey(1) < 1:
     (grabbed, frame) = cap.read()
     if not grabbed:
@@ -29,13 +34,21 @@ while cv2.waitKey(1) < 1:
             writer.release()
             cap.release()
         exit()
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(
-        gray,
-        scaleFactor=1.1,
-        minNeighbors=3,
-        minSize=(130, 130)
-    )
+    if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION and gotFace == 1:
+        ok, box = tracker.update(frame)
+        if ok:
+            faces = [box]
+        else:
+            faces = []
+    else:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=3,
+            minSize=(130, 130)
+        )
+
 
     frameHeight, frameWidth, _ = frame.shape
 
@@ -44,7 +57,9 @@ while cv2.waitKey(1) < 1:
                                  (STABILIZED_WINDOW_WIDTH_HALF*2, STABILIZED_WINDOW_HEIGHT_HALF*2))
 
     if len(faces) > 0:
-        got_face = 1
+        if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION and not gotFace:
+            tracker.init(frame, faces[0])
+        gotFace = True
         x1, y1, w, h = faces[0]
         x = int(x1 + w / 2)
         y = int(y1 + h / 2)
@@ -65,7 +80,7 @@ while cv2.waitKey(1) < 1:
         if (x + STABILIZED_WINDOW_WIDTH_HALF) < frameWidth:
             newx_max = x + STABILIZED_WINDOW_WIDTH_HALF
 
-    if got_face == 1:
+    if gotFace:
         roi = frame[newy:newy_max, newx:newx_max]
         cv2.imshow('output', roi)
         if SAVE_OUTPUT_VIDEO:
