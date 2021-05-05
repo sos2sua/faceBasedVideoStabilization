@@ -1,4 +1,10 @@
-# faceBasedVideoStabilization
+# Face Based Video Stabilization
+
+To Exit the code press 'q' (this will ensure the video is saved gracefull if recording is used)
+
+If Using tracking:
+1. Press any key to skip
+2. Press 's' key to select
 
 The following parameters allows you to customize
 1. Output Video size (STABILIZED_WINDOW_HEIGHT_HALF, STABILIZED_WINDOW_WIDTH_HALF)
