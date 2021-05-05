@@ -5,3 +5,6 @@ The following parameters allows you to customize
 2. SAVE_OUTPUT_VIDEO = True, will save the output video as pointed by OUTPUT_VIDEO_FILE
 3. OUTPUT_VIDEO_FPS sets the frame rate for the video to be recored if SAVE_OUTPUT_VIDEO = True
 4. VIDEO_SRC_IS_CAM = True uses available camera as input(Note: OUTPUT_VIDEO_FPS is set to 15fps), if false will read take the input video file set by INPUT_VIDEO_FILE
+5. USE_TRACKING_AFTER_INITIAL_FACE_DETECTION = True, Adds Tracking of face using opencv trackers to:
+- Resolve the issue of multiple face detection causing flickering
+- Tracking performs as a better anchor than Face detection
