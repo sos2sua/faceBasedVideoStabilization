@@ -29,7 +29,7 @@ if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION:
     # tracker = cv2.TrackerKCF_create()
     tracker = cv2.TrackerMIL_create()
 
-while cv2.waitKey(1) < 1:
+while cv2.waitKey(1) < 113:
     (grabbed, frame) = cap.read()
     if not grabbed:
         if SAVE_OUTPUT_VIDEO:
