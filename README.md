@@ -8,3 +8,7 @@ The following parameters allows you to customize
 5. USE_TRACKING_AFTER_INITIAL_FACE_DETECTION = True, Adds Tracking of face using opencv trackers to:
 - Resolve the issue of multiple face detection causing flickering
 - Tracking performs as a better anchor than Face detection
+
+Checkout the example output:
+https://youtu.be/iQT9xuDh_ek
+https://youtu.be/lau9HY31Nhc
