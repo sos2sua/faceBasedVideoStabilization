@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 USE_TRACKING_AFTER_INITIAL_FACE_DETECTION = True
 STABILIZED_WINDOW_HEIGHT_HALF = int(480 / 2)
@@ -17,7 +18,7 @@ if VIDEO_SRC_IS_CAM :
 else:
     cap = cv2.VideoCapture(INPUT_VIDEO_FILE)
 
-x, y, w, h = [0,0,0,0]
+x, y, w, h = [0, 0, 0, 0]
 newy_max = newx_max = 0
 newy = newx = 0
 gotFace = False
@@ -25,7 +26,8 @@ writer = 0
 roi = 0
 
 if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION:
-    tracker = cv2.TrackerKCF_create()
+    # tracker = cv2.TrackerKCF_create()
+    tracker = cv2.TrackerMIL_create()
 
 while cv2.waitKey(1) < 1:
     (grabbed, frame) = cap.read()
@@ -49,7 +51,6 @@ while cv2.waitKey(1) < 1:
             minSize=(130, 130)
         )
 
-
     frameHeight, frameWidth, _ = frame.shape
 
     if SAVE_OUTPUT_VIDEO and writer == 0:
@@ -58,7 +59,29 @@ while cv2.waitKey(1) < 1:
 
     if len(faces) > 0:
         if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION and not gotFace:
-            tracker.init(frame, faces[0])
+            selected = False
+            for face in faces:
+                fx, fy, fw, fh = face
+                fw += 5+fx
+                fh += 5+fy
+                fx -= 5
+                fy -= 5
+                if fx < 0 or fy < 0:
+                    continue
+
+                foundFace = frame[fy:fh, fx:fw]
+                cv2.imshow('Found Face', foundFace)
+                print("Press 's' to select and any other key to proceed.")
+                key = cv2.waitKey(0)
+                if key == 115:
+                    selected = True
+                    face = np.array([fx, fy, fw - fx, fh - fy])
+                    tracker.init(frame, face)
+                    break
+
+            if not selected:
+                continue
+
         gotFace = True
         x1, y1, w, h = faces[0]
         x = int(x1 + w / 2)
@@ -71,7 +94,7 @@ while cv2.waitKey(1) < 1:
         if (y-STABILIZED_WINDOW_HEIGHT_HALF) > 0:
             newy = y - STABILIZED_WINDOW_HEIGHT_HALF
 
-        if (y+STABILIZED_WINDOW_HEIGHT_HALF)<frameHeight:
+        if (y+STABILIZED_WINDOW_HEIGHT_HALF) < frameHeight:
             newy_max= y + STABILIZED_WINDOW_HEIGHT_HALF
 
         if (x - STABILIZED_WINDOW_WIDTH_HALF) > 0:
@@ -86,5 +109,6 @@ while cv2.waitKey(1) < 1:
         if SAVE_OUTPUT_VIDEO:
             roi = cv2.resize(roi,(STABILIZED_WINDOW_WIDTH_HALF*2, STABILIZED_WINDOW_HEIGHT_HALF*2))
             writer.write(roi)
+
 writer.release()
 cap.release()
