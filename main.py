@@ -2,8 +2,9 @@ import cv2
 import numpy as np
 
 USE_TRACKING_AFTER_INITIAL_FACE_DETECTION = True
-STABILIZED_WINDOW_HEIGHT_HALF = int(480 / 2)
-STABILIZED_WINDOW_WIDTH_HALF = int(720 / 2)
+STABILIZED_WINDOW_HEIGHT_HALF = int(720 / 2)
+STABILIZED_WINDOW_WIDTH_HALF = int(1800 / 2)
+HEIGHT_OFFSET_FOR_STABILIZED_WINDOW = 2000
 SAVE_OUTPUT_VIDEO = True
 OUTPUT_VIDEO_FPS = 30
 VIDEO_SRC_IS_CAM = True
@@ -26,8 +27,8 @@ writer = 0
 roi = 0
 
 if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION:
-    # tracker = cv2.TrackerKCF_create()
-    tracker = cv2.TrackerMIL_create()
+    tracker = cv2.TrackerKCF_create()
+    # tracker = cv2.TrackerMIL_create()
 
 while cv2.waitKey(1) < 113:
     (grabbed, frame) = cap.read()
@@ -55,17 +56,17 @@ while cv2.waitKey(1) < 113:
 
     if SAVE_OUTPUT_VIDEO and writer == 0:
         writer = cv2.VideoWriter(OUTPUT_VIDEO_FILE, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), OUTPUT_VIDEO_FPS,
-                                 (STABILIZED_WINDOW_WIDTH_HALF*2, STABILIZED_WINDOW_HEIGHT_HALF*2))
+                                 (STABILIZED_WINDOW_WIDTH_HALF*2, STABILIZED_WINDOW_HEIGHT_HALF*2+HEIGHT_OFFSET_FOR_STABILIZED_WINDOW))
 
     if len(faces) > 0:
         if USE_TRACKING_AFTER_INITIAL_FACE_DETECTION and not gotFace:
             selected = False
             for face in faces:
                 fx, fy, fw, fh = face
-                fw += 5+fx
-                fh += 5+fy
-                fx -= 5
-                fy -= 5
+                fw += 140+fx
+                fh += 140+fy
+                fx -= 140
+                fy -= 140
                 if fx < 0 or fy < 0:
                     continue
 
@@ -104,10 +105,10 @@ while cv2.waitKey(1) < 113:
             newx_max = x + STABILIZED_WINDOW_WIDTH_HALF
 
     if gotFace:
-        roi = frame[newy:newy_max, newx:newx_max]
+        roi = frame[newy:newy_max+HEIGHT_OFFSET_FOR_STABILIZED_WINDOW, newx:newx_max]
         cv2.imshow('output', roi)
         if SAVE_OUTPUT_VIDEO:
-            roi = cv2.resize(roi,(STABILIZED_WINDOW_WIDTH_HALF*2, STABILIZED_WINDOW_HEIGHT_HALF*2))
+            roi = cv2.resize(roi,(STABILIZED_WINDOW_WIDTH_HALF*2, STABILIZED_WINDOW_HEIGHT_HALF*2+HEIGHT_OFFSET_FOR_STABILIZED_WINDOW))
             writer.write(roi)
 
 writer.release()
